@@ -12,7 +12,7 @@ echo ""
 
 clear
 make clean
-git checkout master
+git checkout SM-G900F
 export ARCH=arm && export SUBARCH=arm 
 export CROSS_COMPILE=~/tmp/arm-eabi-4.10/bin/arm-eabi-
 export ENABLE_GRAPHITE=true
