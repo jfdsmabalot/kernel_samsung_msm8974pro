@@ -352,6 +352,7 @@ MODFLAGS        = -DMODULE \
                   -mfpu=neon-vfpv4 \
                   -mtune=cortex-a15 \
                   -O3 \
+                  -fpredictive-commoning \
 		  -fgcse-las
 
 CFLAGS_MODULE   = $(MODFLAGS)
@@ -378,6 +379,13 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
                    -include $(srctree)/include/linux/kconfig.h
 
 KBUILD_CPPFLAGS := -D__KERNEL__
+
+#
+# Cortex A-15 Flags
+#
+CFLAGS_A15 = -mtune=cortex-a15 -mfpu=neon -funsafe-math-optimizations
+CFLAGS_MODULO = -fmodulo-sched -fmodulo-sched-allow-regmoves
+KERNEL_MODS        = $(CFLAGS_A15) $(CFLAGS_MODULO)
  
 KBUILD_CFLAGS   :=-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
