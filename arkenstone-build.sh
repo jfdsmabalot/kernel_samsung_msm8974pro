@@ -4,15 +4,16 @@
 #  The Arkenstone Kernel
 #
 
+clear
+
 echo ""
 echo ""
 echo "The Arkenstone Kernel S5"
 echo ""
 echo ""
 
-clear
 make clean
-git checkout SM-G900F
+git checkout exp
 export ARCH=arm
 export CROSS_COMPILE=~/tmp/arm-eabi-4.10/bin/arm-eabi-
 export ENABLE_GRAPHITE=true
