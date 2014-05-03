@@ -348,26 +348,17 @@ CHECK		= sparse
 
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
-MODFLAGS        = -DMODULE \
-                  -mfpu=neon-vfpv4 \
-                  -mtune=cortex-a15 \
-                  -O3 \
-                  -fpredictive-commoning \
-		  -fgcse-las
 
-CFLAGS_MODULE   = $(MODFLAGS)
-AFLAGS_MODULE   = $(MODFLAGS)
+KERNELFLAGS     = -O2 -mtune=cortex-a15 -mfpu=neon -fgcse-las -fpredictive-commoning
+MODFLAGS        = -DMODULE $(KERNELFLAGS)
+CFLAGS_MODULE   = $(KERNELFLAGS)
+AFLAGS_MODULE   = $(KERNELFLAGS)
 LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
-CFLAGS_KERNEL   =  -mfpu=neon-vfpv4 \
-                  -mtune=cortex-a15 \
-		  -fgcse-las \
-		  -fpredictive-commoning \
-                  -O2
-
+CFLAGS_KERNEL   = $(KERNELFLAGS)
 ifeq ($(ENABLE_GRAPHITE),true)
 CFLAGS_KERNEL	+= -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 endif
-AFLAGS_KERNEL	=
+AFLAGS_KERNEL	= $(KERNELFLAGS)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
