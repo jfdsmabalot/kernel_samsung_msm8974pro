@@ -17,7 +17,7 @@ git checkout master
 export ARCH=arm
 export CROSS_COMPILE=~/tmp/arm-eabi-4.10/bin/arm-eabi-
 export ENABLE_GRAPHITE=true
-make arkenstone_defconfig msm8974_sec_defconfig VARIANT_DEFCONFIG=msm8974pro_sec_klte_eur_defconfig SELINUX_DEFCONFIG=selinux_defconfig
+make arkenstone_defconfig VARIANT_DEFCONFIG=msm8974pro_sec_klte_eur_defconfig SELINUX_DEFCONFIG=selinux_defconfig
 time make -j3 2>&1 | tee kernel.log
 
 echo ""
