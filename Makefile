@@ -349,15 +349,24 @@ CHECK		= sparse
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
-KERNELFLAGS     = -O2 -mtune=cortex-a15 -marm -ffast-math -mfpu=neon-vfpv4 -mvectorize-with-neon-quad -fgcse-las -fpredictive-commoning
-CFLAGS_MODULE   = -DMODULE -fno-pic $(KERNELFLAGS)
-AFLAGS_MODULE   = 
-LDFLAGS_MODULE  = 
-CFLAGS_KERNEL   = $(KERNELFLAGS)
+MODFLAGS        = -DMODULE \
+                  -mfpu=neon-vfpv4 \
+                  -mtune=cortex-a15 \
+                  -O3 \
+                  -fgcse-las
+
+CFLAGS_MODULE   = $(MODFLAGS)
+AFLAGS_MODULE   = $(MODFLAGS)
+LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
+CFLAGS_KERNEL   = -mfpu=neon-vfpv4 \
+                  -mtune=cortex-a15 \
+                  -O2 \
+                  -fgcse-las \
+                  -fpredictive-commoning
 ifeq ($(ENABLE_GRAPHITE),true)
 CFLAGS_KERNEL	+= -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 endif
-AFLAGS_KERNEL	= $(KERNELFLAGS)
+AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -373,20 +382,16 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 #
 # The Arkenstone Optimizations
 #
-CFLAGS_A15 = -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 \
-	     -fgcse-sm -fgcse-after-reload -fgcse-las -fsched-spec-load \
-	     -ffast-math -munaligned-access -fsingle-precision-constant -fipa-pta
+CFLAGS_A15 = -mtune=cortex-a15 -mfpu=neon-vfpv4 -funsafe-math-optimizations
 CFLAGS_MODULO = -fmodulo-sched -fmodulo-sched-allow-regmoves
-CFLAGS_NOERRORS = -Werror-implicit-function-declaration -Wno-format-security -Wno-format-security \
-                  -Wno-maybe-uninitialized -Wno-sizeof-pointer-memaccess -mno-unaligned-access
-KERNEL_MODS        = $(CFLAGS_A15) $(CFLAGS_MODULO) $(CFLAGS_NOERRORS)
+KERNEL_MODS	= $(CFLAGS_A15) $(CFLAGS_MODULO)
  
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
+		   -Werror-implicit-function-declaration \
+		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
-                   -ftree-vectorize \
                    $(KERNEL_MODS)
- 		           
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
@@ -577,11 +582,12 @@ endif # $(dot-config)
 all: vmlinux
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS	+= -Os
+KBUILD_CFLAGS	+= -Os $(call cc-disable-warning,maybe-uninitialized,)
 else
 KBUILD_CFLAGS	+= -O3
-KBUILD_CFLAGS   += $(call cc-disable-warning,maybe-uninitialized) -fno-inline-functions
-KBUILD_CFLAGS   += $(call cc-disable-warning,array-bounds)
+ifeq ($(ENABLE_GRAPHITE),true)
+KBUILD_CFLAGS	+= -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
+endif
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
