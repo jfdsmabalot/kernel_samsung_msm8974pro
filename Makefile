@@ -349,16 +349,15 @@ CHECK		= sparse
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
-KERNELFLAGS     = -O2 -mtune=cortex-a15 -mfpu=neon -fgcse-las -fpredictive-commoning
-MODFLAGS        = -DMODULE $(KERNELFLAGS)
-CFLAGS_MODULE   = -fno-pic $(KERNELFLAGS)
-AFLAGS_MODULE   = $(KERNELFLAGS)
-LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
-CFLAGS_KERNEL   = -mfpu=neon -ftree-vectorize $(KERNELFLAGS)
+KERNELFLAGS     = -O2 -mtune=cortex-a15 -marm -ffast-math -mfpu=neon-vfpv4 -mvectorize-with-neon-quad -fgcse-las -fpredictive-commoning
+CFLAGS_MODULE   = -DMODULE -fno-pic $(KERNELFLAGS)
+AFLAGS_MODULE   = 
+LDFLAGS_MODULE  = 
+CFLAGS_KERNEL   = $(KERNELFLAGS)
 ifeq ($(ENABLE_GRAPHITE),true)
 CFLAGS_KERNEL	+= -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 endif
-AFLAGS_KERNEL	= -mfpu=neon -ftree-vectorize $(KERNELFLAGS)
+AFLAGS_KERNEL	= $(KERNELFLAGS)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -374,18 +373,18 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 #
 # The Arkenstone Optimizations
 #
-CFLAGS_A15 = -mtune=cortex-a15 -mfpu=neon -funsafe-math-optimizations
+CFLAGS_A15 = -mtune=cortex-a15 -marm -mfpu=neon-vfpv4 \
+	     -fgcse-sm -fgcse-after-reload -fgcse-las -fsched-spec-load \
+	     -ffast-math -munaligned-access -fsingle-precision-constant -fipa-pta
 CFLAGS_MODULO = -fmodulo-sched -fmodulo-sched-allow-regmoves
-KERNEL_MODS        = $(CFLAGS_A15) $(CFLAGS_MODULO)
+CFLAGS_NOERRORS = -Werror-implicit-function-declaration -Wno-format-security -Wno-format-security \
+                  -Wno-maybe-uninitialized -Wno-sizeof-pointer-memaccess -mno-unaligned-access
+KERNEL_MODS        = $(CFLAGS_A15) $(CFLAGS_MODULO) $(CFLAGS_NOERRORS)
  
-KBUILD_CFLAGS   :=-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
-		   -Werror-implicit-function-declaration \
-		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
                    -ftree-vectorize \
-                   -mno-unaligned-access \
-                   -Wno-sizeof-pointer-memaccess \
                    $(KERNEL_MODS)
  		           
 KBUILD_AFLAGS_KERNEL :=
