@@ -110,10 +110,10 @@ libfdt_hdrs        := fdt.h libfdt.h libfdt_internal.h
 libfdt_objs        := $(addsuffix .o, $(basename $(libfdt)))
 
 $(addprefix $(obj)/,$(libfdt) $(libfdt_hdrs)): $(obj)/%: $(srctree)/scripts/dtc/libfdt/%
-        $(call cmd,shipped)
+	$(call cmd,shipped)
 
 $(addprefix $(obj)/,$(libfdt_objs) atags_to_fdt.o): \
-        $(addprefix $(obj)/,$(libfdt_hdrs))
+	$(addprefix $(obj)/,$(libfdt_hdrs))
 
 ifeq ($(CONFIG_ARM_ATAG_DTB_COMPAT),y)
 OBJS        += $(libfdt_objs) atags_to_fdt.o
@@ -161,14 +161,14 @@ AFLAGS_lib1funcs.o += -Wa,-mcpu=cortex-a15
 lib1funcs = $(obj)/lib1funcs.o
 
 $(obj)/lib1funcs.S: $(srctree)/arch/$(SRCARCH)/lib/lib1funcs.S
-        $(call cmd,shipped)
+	$(call cmd,shipped)
 
 # For __aeabi_llsl
 AFLAGS_ashldi3.o += -Wa,-mcpu=cortex-a15
 ashldi3 = $(obj)/ashldi3.o
 
 $(obj)/ashldi3.S: $(srctree)/arch/$(SRCARCH)/lib/ashldi3.S
-        $(call cmd,shipped)
+	$(call cmd,shipped)
 
 # We need to prevent any GOTOFF relocs being used with references
 # to symbols in the .bss section since we cannot relocate them
@@ -192,20 +192,20 @@ fi
 
 $(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/$(MISC) $(obj)/$(DECOMPRESS) $(obj)/piggy.$(suffix_y).o \
                 $(addprefix $(obj)/, $(OBJS)) $(lib1funcs) $(ashldi3) FORCE
-        @$(check_for_multiple_zreladdr)
-        $(call if_changed,ld)
-        @$(check_for_bad_syms)
+	@$(check_for_multiple_zreladdr)
+	$(call if_changed,ld)
+	@$(check_for_bad_syms)
 
 AFLAGS_piggy.$(suffix_y).o += -Wa,-mcpu=cortex-a15
 $(obj)/piggy.$(suffix_y): $(obj)/../Image FORCE
-        $(call if_changed,$(suffix_y))
+	$(call if_changed,$(suffix_y))
 
 $(obj)/piggy.$(suffix_y).o:  $(obj)/piggy.$(suffix_y) FORCE
 
 CFLAGS_font.o := -Dstatic=
 
 $(obj)/font.c: $(FONTC)
-        $(call cmd,shipped)
+	$(call cmd,shipped)
 
 $(obj)/vmlinux.lds: $(obj)/vmlinux.lds.in arch/arm/boot/Makefile $(KCONFIG_CONFIG)
-        @sed "$(SEDFLAGS)" < $< > $@
+	@sed "$(SEDFLAGS)" < $< > $@
