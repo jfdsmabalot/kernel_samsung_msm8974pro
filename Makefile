@@ -351,14 +351,14 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 
 KERNELFLAGS     = -O2 -mtune=cortex-a15 -mfpu=neon -fgcse-las -fpredictive-commoning
 MODFLAGS        = -DMODULE $(KERNELFLAGS)
-CFLAGS_MODULE   = $(KERNELFLAGS)
+CFLAGS_MODULE   = -fno-pic $(KERNELFLAGS)
 AFLAGS_MODULE   = $(KERNELFLAGS)
 LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
-CFLAGS_KERNEL   = $(KERNELFLAGS)
+CFLAGS_KERNEL   = -mfpu=neon -ftree-vectorize $(KERNELFLAGS)
 ifeq ($(ENABLE_GRAPHITE),true)
 CFLAGS_KERNEL	+= -fgraphite -floop-parallelize-all -ftree-loop-linear -floop-interchange -floop-strip-mine -floop-block
 endif
-AFLAGS_KERNEL	= $(KERNELFLAGS)
+AFLAGS_KERNEL	= -mfpu=neon -ftree-vectorize $(KERNELFLAGS)
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -372,7 +372,7 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
 KBUILD_CPPFLAGS := -D__KERNEL__
 
 #
-# Cortex A-15 Flags
+# The Arkenstone Optimizations
 #
 CFLAGS_A15 = -mtune=cortex-a15 -mfpu=neon -funsafe-math-optimizations
 CFLAGS_MODULO = -fmodulo-sched -fmodulo-sched-allow-regmoves
@@ -382,7 +382,11 @@ KBUILD_CFLAGS   :=-Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks
+		   -fno-delete-null-pointer-checks \
+                   -ftree-vectorize \
+                   -mno-unaligned-access \
+                   -Wno-sizeof-pointer-memaccess \
+                   $(KERNEL_MODS)
  		           
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
@@ -577,6 +581,8 @@ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS	+= -Os
 else
 KBUILD_CFLAGS	+= -O3
+KBUILD_CFLAGS   += $(call cc-disable-warning,maybe-uninitialized) -fno-inline-functions
+KBUILD_CFLAGS   += $(call cc-disable-warning,array-bounds)
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
